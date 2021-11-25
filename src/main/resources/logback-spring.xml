@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <springProperty scope="context" name="springAppName"
+                    source="spring.application.name" />
+    <property name="CHARSET" value="UTF-8"/>
+    <property name="SAVE_PATH" value="/data/logs/${springAppName}"/>
+    <property name="PATTERN" value="%red(%d{yyyy-MM-dd HH:mm:ss.SSS}) %X{traceId} %yellow(%-5level) %highlight([%t]) %boldMagenta([%C]).%green(%method[%L]): %m%n"/>
+
+
+    <!--定义日志文件输出地址-->
+    <property name="LOG_ERROR_HOME" value="/data/logs/error"/>
+    <property name="LOG_INFO_HOME" value="/data/logs/info"/>
+
+    <!--通过appender标签指定日志的收集策略，我们会定义三个收集策略：控制台输出、普通信息文件输出、错误信息文件输出-->
+    <!--name属性指定appender命名-->
+    <!--class属性指定输出策略，通常有两种，控制台输出和文件输出，文件输出就是将日志进行一个持久化-->
+
+    <!--控制台输出-->
+    <appender name="CONSOLE_LOG" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!--普通信息文件输出-->
+    <appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--通过使用该标签指定过滤策略-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!--标签指定过滤的类型-->
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <!--标签指定日志输出格式-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %class{39}.%method[%L] : %m%n</pattern>
+        </encoder>
+        <!--标签指定收集策略，比如基于时间进行收集-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--标签指定生成日志保存地址，通过这样配置已经实现了分类分天收集日志的目标了-->
+            <fileNamePattern>${LOG_INFO_HOME}/${springAppName}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>200MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <append>true</append>
+    </appender>
+
+    <!--错误信息文件输出-->
+    <appender name="ERROR_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <encoder>
+            <!--标签指定日志输出格式-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%15.15t] %class{39}.%method[%L] : %m%n</pattern>
+        </encoder>
+        <!--标签指定收集策略，比如基于时间进行收集-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_ERROR_HOME}/${springAppName}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>200MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <append>true</append>
+    </appender>
+
+
+    <!-- 异步输出 -->
+    <appender name="ASYNC-INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="INFO_LOG"/>
+    </appender>
+
+    <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="ERROR_LOG"/>
+    </appender>
+
+
+    <!--必填标签，用来指定最基础的日志输出级别-->
+    <root level="info">
+        <!--添加append-->
+        <appender-ref ref="CONSOLE_LOG"/>
+        <appender-ref ref="INFO_LOG"/>
+        <appender-ref ref="ERROR_LOG"/>
+    </root>
+</configuration>

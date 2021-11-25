@@ -1,0 +1,8 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.sleeper.base.aspect.LogAspect,\
+com.sleeper.base.advice.ExceptionControllerAdvice,\
+com.sleeper.base.advice.ResponseControllerAdvice,\
+com.sleeper.base.encryp.DecryptInterceptor,\
+com.sleeper.base.encryp.EncryptInterceptor,\
+com.sleeper.base.config.WebAppConfig
